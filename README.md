@@ -38,9 +38,10 @@ Key genome parameters sourced from published literature (citations in code comme
 | Recombination rate (m1, m2) | 2.26 × 10⁻⁸ per bp per generation | Wang et al. 2023 (PMID: 37037625) |
 | Recombination rate (m3) | 2.78 × 10⁻⁸ per bp per generation | Wang et al. 2023 (PMID: 37037625) |
 | Genome structure | 5 chromosome arms (X, 2L, 2R, 3L, 3R), ~88 Mb total, ~5,000 genes of 2 kb each with realistic intergenic spacing | *D. melanogaster* reference |
-| Inversion span | ~5 Mb on chromosome 2R (breakpoints at 55,047,499 and 60,019,275), encompassing ~227 genes | Empirically motivated |
+| Inversion span | ~5 Mb on chromosome 2R (breakpoints at 55,047,499 and 60,019,275), encompassing ~227 genes | Sturtevant and Beadle 1036 based on _In(2R)NS_
+ Inversion |
 
-The inversion spans a ~5 Mb region on chromosome arm 2R and captures 227 genes, consistent with the size range of natural inversions segregating in *D. melanogaster* populations.
+The inversion spans a ~5 Mb region on chromosome arm 2R and captures 227 genes, consistent with the size range of a natural inversion segregating in *D. melanogaster* populations.
 
 ---
 
@@ -138,7 +139,7 @@ This will submit jobs for individuals 0–2499, producing output in per-individu
 | `chrX_del.txt`, `chr2L_del.txt`, etc. | Per-chromosome-arm mutation counts (from Perl parser) |
 | `inversion_del.txt` | Mutation counts within the inverted region |
 
-### Master CSV Columns
+### Consolidated CSV Columns
 
 ```
 Individual, Seed, indv, haplo, s_het, replicate, time_end, chrX, chr2L, chr2R, inv, chr3L, chr3R
@@ -146,17 +147,33 @@ Individual, Seed, indv, haplo, s_het, replicate, time_end, chrX, chr2L, chr2R, i
 
 Mutation densities are normalized by the number of genes in each genomic region.
 
+## Findings
+
+This work was presented at the [Evolution Meetings in Montreal in 2024 by Dr. Spencer Koury](https://www.youtube.com/watch?v=GmcUzgrUA_g&list=PLnl_pi1g6Uve0ZkdmIUjGw3fu91avxcE3&index=122). The code was collaboratively developed with input from Dr. Koury by Dr. Stevison who wrote the slim models, ran the code and shared summarized outputs. 
+
+We found that modeling the inversion more realistically using ICE did NOT decrease the genome-wide mutational load suggesting that the interchromosomal effect, which balancing the distribution of crossing over on a single generation time-scale, does NOT have the power to overcome the genetic load of inversions on a longer time-scale.
+
 ---
 
-## Citation
+## Citations
 
 If you use or adapt these scripts, please cite both the original Berdan et al. paper that inspired this framework and the relevant empirical parameter sources cited in the code comments:
 
-- Berdan EL, Blanckaert A, Butlin RK, Bank C (2021). Deleterious mutation accumulation and the long-term fate of chromosomal inversions. *PLoS Genetics* 17(3): e1009411. https://doi.org/10.1371/journal.pgen.1009411
+- Berdan EL, Blanckaert A, Butlin RK, Bank C (2021). Deleterious mutation accumulation and the long-term fate of chromosomal inversions. *PLoS Genetics* 17(3): e1009411. https://doi.org/10.1371/journal.pgen.1009411.
 
 - Wang W, et al. (2023). Direct estimation of *de novo* mutation rates in *Drosophila melanogaster*. *PMID: 37037625.*
 
 - Loewe L, Charlesworth B (2006). Inferring the distribution of mutational effects on fitness in *Drosophila*. *Biology Letters* 2(3): 426–430.
+  
+- Koury SA and LS Stevison. 2024. Pre-registration: The interchromosomal effect of inversion heterozygosity on meiotic recombination in Drosophila melanogaster: A meta-analysis. https://osf.io/rd3a7.
+  
+- Sturtevant, A. H., & Beadle, G. W. (1936). The Relations of Inversions in the X Chromosome of Drosophila Melanogaster to Crossing over and Disjunction. Genetics, 21(5), 554–604. https://doi.org/10.1093/genetics/21.5.554.
+  
+- Ramel C. (1968). The effect of the curly inversions on meiosis in Drosophila melanogaster. II. Interchromosomal effects on males, carrying heterochromatin deficient X chromosome. Hereditas, 60(1), 211–222. https://doi.org/10.1111/j.1601-5223.1968.tb02202.x.
+
+- Koury S. A. (2023). Predicting recombination suppression outside chromosomal inversions in Drosophila melanogaster using crossover interference theory. Heredity, 130(4), 196–208. https://doi.org/10.1038/s41437-023-00593-x.
+  
+- Grell R. F. (1978). A Comparison of Heat and Interchromosomal Effects on Recombination and Interference in DROSOPHILA MELANOGASTER. Genetics, 89(1), 65–77. https://doi.org/10.1093/genetics/89.1.65
 
 ---
 
