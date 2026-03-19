@@ -38,7 +38,7 @@ Key genome parameters sourced from published literature (citations in code comme
 | Recombination rate (m1, m2) | 2.26 × 10⁻⁸ per bp per generation | Wang et al. 2023 (PMID: 37037625) |
 | Recombination rate (m3) | 2.78 × 10⁻⁸ per bp per generation | Wang et al. 2023 (PMID: 37037625) |
 | Genome structure | 5 chromosome arms (X, 2L, 2R, 3L, 3R), ~88 Mb total, ~5,000 genes of 2 kb each with realistic intergenic spacing | *D. melanogaster* reference |
-| Inversion span | ~5 Mb on chromosome 2R (breakpoints at 55,047,499 and 60,019,275), encompassing ~227 genes | Sturtevant and Beadle 1036 based on _In(2R)NS_ Inversion |
+| Inversion span | ~5 Mb on chromosome 2R (breakpoints at 55,047,499 and 60,019,275), encompassing ~227 genes | Sturtevant and Beadle 1936 based on _In(2R)NS_ Inversion |
 
 The inversion spans a ~5 Mb region on chromosome arm 2R and captures 227 genes, consistent with the size range of a natural inversion segregating in *D. melanogaster* populations.
 
