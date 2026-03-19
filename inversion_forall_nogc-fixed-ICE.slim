@@ -1,0 +1,283 @@
+//-------------------------------------------------------------------
+// Slim script to study the fate of a new inversion in the absence of gene conversion, starting from a preexiting burn-in file. 
+// Usage: slim -seed 42 -d indv=42 -d haplo=1 -d s_het=1.03 -d n_sam=100 ./inversion_forall_nogc.slim, see also for_each_indv_nogc.sh
+// Usage: slim -seed 42 -d indv=42 -d haplo=1 -d s_het=1.03 -d P_KEEP=0.92333 -d rec=0.0000184 ./inversion_forall_nogc-fixed-v3.slim, see also for_each_indv_nogc.sh
+//-------------------------------------------------------------------
+
+//-------------------------------------------------------------------
+// Initialization of the population. Paraneter should be identical to the burn in file
+//-------------------------------------------------------------------
+
+
+initialize() {
+	//defineConstant("indv", 42);
+	//defineConstant("haplo", 1 );
+	//defineConstant("s_het", 4);
+	//defineConstant("n_sam",100);
+	//defineConstant("P_KEEP",0.857);
+	//defineConstant("rec",0.0000184);
+	initializeMutationRate(8.4e-7); // Deleterious mutation rate estimated in D. melano. From Haag-Liautard, C. et al. Nature 445, 82-85, (2007) 
+	
+	initializeMutationType("m5", 0, "g", -0.05, 0.5);// fitness effect of deleterious mutations drawn from a gamma distribution of parameter alpha=0.5 and beta=10. Note that value provide here are not the parameter of the gamma distribution but the mean of the distribution -(alpha/beta) and alpha. 
+	
+	initializeMutationType("m6", 0, "f", 0);// mutation marker for the inversion
+	
+	initializeGenomicElementType("g2", m5, 1.0); // defines exons; they only contains deleterious mutations. Due to computational speed limits, neutral mutations are ignored.
+	
+	// 3 chromosomes of length 100 kb with uniform recombination with 6 exons of 5k length
+	
+	// chrm 1
+	initializeGenomicElement(g2, 10000, 14999);
+	initializeGenomicElement(g2, 25000, 29999);
+	initializeGenomicElement(g2, 40000, 44999);
+	initializeGenomicElement(g2, 55000, 59999);
+	initializeGenomicElement(g2, 70000, 74999);
+	initializeGenomicElement(g2, 85000, 89999);
+	
+	//chrm 2
+	initializeGenomicElement(g2, 110000, 114999);
+	initializeGenomicElement(g2, 125000, 129999);
+	initializeGenomicElement(g2, 140000, 144999);
+	initializeGenomicElement(g2, 155000, 159999);
+	initializeGenomicElement(g2, 170000, 174999);
+	initializeGenomicElement(g2, 185000, 189999);
+	
+	//chrm 3
+	initializeGenomicElement(g2, 210000, 214999);
+	initializeGenomicElement(g2, 225000, 229999);
+	initializeGenomicElement(g2, 240000, 244999);
+	initializeGenomicElement(g2, 255000, 259999);
+	initializeGenomicElement(g2, 270000, 274999);
+	initializeGenomicElement(g2, 285000, 289999);
+	
+	// define recombination rate between two adjacent positions. Recombination in Slim corresponds to the sum of crossing over and gene conversion rate. Values are based on Betancourt (2002) and Miller (2012).   
+	//initializeRecombinationRate(c(0.0000024,0.5,0.0000024,0.5,0.0000024),c(99999,100000,199999,200000,299999));
+	//initializeRecombinationRate(c(0.0000184,0.5,0.0000184,0.5,0.0000184),c(99999,100000,199999,200000,299999));
+	initializeRecombinationRate(c(rec,0.5,rec,0.5,rec),c(99999,100000,199999,200000,299999));
+
+}
+
+//-------------------------------------------------------------------
+// Define the recombination callback to prevent crossing over to happens when an individual is carrying a copy of each arrangement (tracked through the m6 position). It prevents the formation of a breakpoints in the inversion region.  
+//-------------------------------------------------------------------
+//recombination() {
+//	if (genome1.containsMarkerMutation(m6, 60000) == genome2.containsMarkerMutation(m6, 60000))
+//		return F;
+//	inv = (breakpoints > 50000) & (breakpoints < 80000);
+//	if (sum(inv) == 0)
+//		return F;
+//	breakpoints = breakpoints[!inv];
+
+//	return T;
+//}
+
+//Better recombination() callback, from Schaal, Buffalo, Ralph & Kern: 
+recombination() {
+	gm1 = genome1.containsMarkerMutation(m6, 50000);
+	gm2 = genome2.containsMarkerMutation(m6, 50000);
+	hom_breaks = breakpoints[breakpoints <= 100000];//breakpoints on chromosome with inversion
+	nonHom_breaks = breakpoints[breakpoints > 100000];//breakpoints on nonhomologous chromosomes
+	
+	if (!(gm1 | gm2)) {
+		// homozygote non-inverted 
+		keep = asLogical(rbinom(size(nonHom_breaks), 1, P_KEEP));    // decide which to keep from nonhomologous chromosomes
+		//catn(c(sim.cycle,gm1,gm2,"HomStd",nonHom_breaks,"Keep:",keep, "length:",length(nonHom_breaks),length(keep)));
+		//catn(c(sim.cycle,gm1,gm2,"Hom-Std",length(breakpoints),length(hom_breaks),length(nonHom_breaks),sum(keep)));
+		breakpoints = c(hom_breaks,nonHom_breaks[keep]);
+		//catn(c(sim.cycle,gm1,gm2,"HomStd new BP:",breakpoints));
+		return T;    // changed the breakpoints
+		//return F;
+	}
+	inInv = (breakpoints > 50000) & (breakpoints <= 80000);
+	//new draw enters here!
+	if (sum(inInv) == 0) {
+		//breakpoints are even inside inversion; so all OK
+		//catn(c(sim.cycle,gm1,gm2,"HetF",breakpoints,length(breakpoints)+1,length(hom_breaks),sum(inInv)+1,length(nonHom_breaks)));
+		return F;
+	}
+			
+	if (gm1 & gm2) {
+		// homozygote inverted 
+		keep = asLogical(rbinom(size(nonHom_breaks), 1, P_KEEP));    // decide which to keep from nonhomologous chromosomes
+		breakpoints = c(hom_breaks,nonHom_breaks[keep]);
+		left = (breakpoints == 50000);
+		right = (breakpoints == 80000 + 1);
+		breakpoints = sort(c(breakpoints[!(left | right)], c(50000, 80000 + 1)[c(sum(left) == 0, sum(right) == 0)]));
+		//	catn(c(sim.cycle,"Hom-Inv", sum(inInv),nonHom));
+		//catn(c(sim.cycle,gm1,gm2,"Hom-Inv", breakpoints, length(breakpoints), length(hom_breaks), length(nonHom_breaks), sum(keep)));
+		return T;
+	} else {
+		// heterozygote inverted: resample to get an even # of breakpoints 
+
+		// this is *recursive*: it calls this recombination callback again! 
+		//catn(c(sim.cycle,gm1,gm2,"HetT", breakpoints, length(breakpoints), length(hom_breaks), sum(inInv), length(nonHom_breaks)));
+		//breakpoints = sim.chromosome.drawBreakpoints(individual);
+		breakpoints = breakpoints[!inInv];	
+	}
+	//catn(c(sim.cycle,gm1,gm2,"new draw",breakpoints,length(breakpoints)));
+	return T;
+}
+
+//-------------------------------------------------------------------
+// Simulation section
+//-------------------------------------------------------------------
+
+
+// read the burn in file and create the inversion in individual -indv- in haplotype -haplo-. These two values are provided in the slim call.
+500000 late () {
+	sim.readFromPopulationFile("../burn_in.txt");
+	target=p1.individuals[indv];
+	gen=target.genomes[haplo];
+	//Berdan et al only had the below line
+	//gen.addNewDrawnMutation(m6,60000);
+	//BUT, updated manual suggests two lines of code to add inversion with first line at start and second line at end
+	gen.addNewDrawnMutation(m6,50000);
+	gen.addNewDrawnMutation(m6,80000);
+}
+
+// Define the fitness fucntion callback to provide a fitness advaantage of 1.03 to heterokyryotypes individuals
+500000:1000001 mutationEffect(m6){
+	if (individual.genome1.countOfMutationsOfType(m6)+individual.genome2.countOfMutationsOfType(m6)==2)
+		return s_het;
+	else
+		return effect;
+}
+
+// To avoid error message, cached fitness moved to an early block and output mutations is in a late block
+500002:510000 early() {
+	if (sim.cycle % 200 == 0) {
+		//p1fit=p1.cachedFitness(NULL);
+		sim.setValue("p1fit",p1.cachedFitness(NULL));
+	}
+	// Check consition to stop the simulations if the inversion is either lost or fixed in the whole populations. Export the final stage of the final status of the popuation.
+	if (sim.countOfMutationsOfType(m6)==0){
+		sim.setValue("p1fit",p1.cachedFitness(NULL));
+	}
+}
+// Tracking the really early stage of the simulation, with the fitness of the whole population and the frequency of the inversion being output every 200 generations.
+500002:510000 late() {
+	if (sim.cycle % 200 == 0) {
+		sim.outputMutations(sim.mutationsOfType(m6),filePath="./inversion_counts.txt",append=T);
+		writeFile("./fitness_p1.txt",paste(sim.cycle),append=T);
+		p1fit=sim.getValue("p1fit");
+		//p1fit=p1.cachedFitness(NULL);
+		writeFile("./fitness_p1.txt",paste(p1fit,sep=", "),append=T);
+		g1fit=p1.individuals.countOfMutationsOfType(m6);
+		writeFile("./fitness_p1.txt",paste(g1fit,sep=", "),append=T);
+	}
+	// Check consition to stop the simulations if the inversion is either lost or fixed in the whole populations. Export the final stage of the final status of the popuation.
+	if (sim.countOfMutationsOfType(m6)==0){
+		sim.outputMutations(sim.mutationsOfType(m6),filePath="./inversion_counts.txt",append=T);
+		sim.outputMutations(sim.mutationsOfType(m5),filePath="./del_mutations.txt",append=T);
+		writeFile("./fitness_p1.txt",paste(sim.cycle),append=T);
+		//p1fit=p1.cachedFitness(NULL);
+		p1fit=sim.getValue("p1fit");
+		writeFile("./fitness_p1.txt",paste(p1fit,sep=", "),append=T);
+		g1fit=p1.individuals.countOfMutationsOfType(m6);
+		writeFile("./fitness_p1.txt",paste(g1fit,sep=", "),append=T);
+		sim.outputFixedMutations(filePath="./inversion_data_fm.txt");
+		catn(c(sim.cycle,"Inversion Lost!"));
+		sim.simulationFinished();
+	}
+}
+
+// To avoid error message, cached fitness moved to an early block and output mutations is in a late block
+510001:520000 early() {
+	if (sim.cycle % 1000 == 0) {
+		//p1fit=p1.cachedFitness(NULL);
+		sim.setValue("p1fit",p1.cachedFitness(NULL));
+	}
+	// Check consition to stop the simulations if the inversion is either lost or fixed in the whole populations. Export the final stage of the final status of the popuation.
+	if (sim.countOfMutationsOfType(m6)==0){
+		sim.setValue("p1fit",p1.cachedFitness(NULL));
+	}
+}
+
+// Tracking the early stage of the simulation, with the fitness of the whole population and the frequency of the inversion being output every 1000 generations.
+510001:520000 late() {
+	if (sim.cycle % 1000 == 0) {
+		sim.outputMutations(sim.mutationsOfType(m6),filePath="./inversion_counts.txt",append=T);
+		writeFile("./fitness_p1.txt",paste(sim.cycle),append=T);
+		//p1fit=p1.cachedFitness(NULL);
+		p1fit=sim.getValue("p1fit");
+		writeFile("./fitness_p1.txt",paste(p1fit,sep=", "),append=T);
+		g1fit=p1.individuals.countOfMutationsOfType(m6);
+		writeFile("./fitness_p1.txt",paste(g1fit,sep=", "),append=T);
+	}
+	// Check consition to stop the simulations if the inversion is either lost or fixed in the whole populations. Export the final stage of the final status of the popuation.
+	if (sim.countOfMutationsOfType(m6)==0){
+		sim.outputMutations(sim.mutationsOfType(m6),filePath="./inversion_counts.txt",append=T);
+		sim.outputMutations(sim.mutationsOfType(m5),filePath="./del_mutations.txt",append=T);
+		writeFile("./fitness_p1.txt",paste(sim.cycle),append=T);
+		//p1fit=p1.cachedFitness(NULL);
+		p1fit=sim.getValue("p1fit");
+		writeFile("./fitness_p1.txt",paste(p1fit,sep=", "),append=T);
+		g1fit=p1.individuals.countOfMutationsOfType(m6);
+		writeFile("./fitness_p1.txt",paste(g1fit,sep=", "),append=T);
+		sim.outputFixedMutations(filePath="./inversion_data_fm.txt");
+		sim.simulationFinished();
+	}
+}
+
+// To avoid error message, cached fitness moved to an early block and output mutations is in a late block
+520001:1000000 early() {
+	if (sim.cycle % 10000 == 0) {
+		//p1fit=p1.cachedFitness(NULL);
+		sim.setValue("p1fit",p1.cachedFitness(NULL));
+	}
+	// Check consition to stop the simulations if the inversion is either lost or fixed in the whole populations. Export the final stage of the final status of the popuation.
+	if (sim.countOfMutationsOfType(m6)==0){
+		sim.setValue("p1fit",p1.cachedFitness(NULL));
+	}
+}
+
+// Tracking the medium and late stage of the simulation, with the fitness of the whole population and the frequency of the inversion being output every 10000 generations.
+520001:1000000 late() {
+	if (sim.cycle % 10000 == 0) {
+		sim.outputMutations(sim.mutationsOfType(m6),filePath="./inversion_counts.txt",append=T);
+		writeFile("./fitness_p1.txt",paste(sim.cycle),append=T);
+		//p1fit=p1.cachedFitness(NULL);
+		p1fit=sim.getValue("p1fit");
+		writeFile("./fitness_p1.txt",paste(p1fit,sep=", "),append=T);
+		g1fit=p1.individuals.countOfMutationsOfType(m6);
+		writeFile("./fitness_p1.txt",paste(g1fit,sep=", "),append=T);
+	}
+	// Check consition to stop the simulations if the inversion is either lost or fixed in the whole populations. Export the final stage of the final status of the popuation.
+	if (sim.countOfMutationsOfType(m6)==0){
+		sim.outputMutations(sim.mutationsOfType(m6),filePath="./inversion_counts.txt",append=T);
+		sim.outputMutations(sim.mutationsOfType(m5),filePath="./del_mutations.txt",append=T);
+		writeFile("./fitness_p1.txt",paste(sim.cycle),append=T);
+		//p1fit=p1.cachedFitness(NULL);
+		p1fit=sim.getValue("p1fit");
+		writeFile("./fitness_p1.txt",paste(p1fit,sep=", "),append=T);
+		g1fit=p1.individuals.countOfMutationsOfType(m6);
+		writeFile("./fitness_p1.txt",paste(g1fit,sep=", "),append=T);
+		sim.outputFixedMutations(filePath="./inversion_data_fm.txt");
+		sim.simulationFinished();
+	}
+}
+
+// If the inversion is still polymorphic at the end of the run, we export the full population for further analysis.
+1000000 late() {
+	sim.outputFull("./final_population.txt");
+}
+
+// To avoid error message, cached fitness moved to an early block and output mutations is in a late block
+1000001 early() {
+	sim.setValue("p1fit",p1.cachedFitness(NULL));
+}
+
+// In addition we export the fitness and tne inversion frequency. Given how Slim is implemented, fitness of generation 1 000 000 is obtained through an exporting the values in generation 1 000 001, as an early event. 
+1000001 late() {
+	sim.outputMutations(sim.mutationsOfType(m6),filePath="./inversion_counts.txt",append=T);
+	sim.outputMutations(sim.mutationsOfType(m5),filePath="./del_mutations.txt",append=T);
+	writeFile("./fitness_p1.txt",paste(sim.cycle),append=T);
+	//p1fit=p1.cachedFitness(NULL);
+	p1fit=sim.getValue("p1fit");
+	writeFile("./fitness_p1.txt",paste(p1fit,sep=", "),append=T);
+	g1fit=p1.individuals.countOfMutationsOfType(m6);
+	writeFile("./fitness_p1.txt",paste(g1fit,sep=", "),append=T);
+	sim.outputFixedMutations(filePath="./inversion_data_fm.txt");
+	sim.simulationFinished();
+}
+
