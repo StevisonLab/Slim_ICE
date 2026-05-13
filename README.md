@@ -1,6 +1,6 @@
 # ICE-SLiM: Inversion Chromosome Evolution — SLiM Simulation Suite
 
-Forward-time population genetic simulations in [SLiM](https://messerlab.org/slim/) modeling the evolutionary fate of chromosomal inversions in *Drosophila melanogaster*, with explicit interchromosomal effects and a full-scale genome architecture.
+Forward-time population genetic simulations in [SLiM](https://messerlab.org/slim/) modeling the evolutionary fate of chromosomal inversions in *Drosophila melanogaster*, with explicit interchromosomal effects and a full-scale genome architecture. A static release of this repository has been archived at Zenodo under the following DOI: [![DOI](https://zenodo.org/badge/1186360682.svg)](https://doi.org/10.5281/zenodo.20170792). Please cite the DOI when using or applying parts of this code.
 
 ---
 
