@@ -1,6 +1,6 @@
 # ICE-SLiM: Inversion Chromosome Evolution — SLiM Simulation Suite
 
-Forward-time population genetic simulations in [SLiM](https://messerlab.org/slim/) modeling the evolutionary fate of chromosomal inversions in *Drosophila melanogaster*, with explicit interchromosomal effects and a full-scale genome architecture. A static release of this repository has been archived at Zenodo under the following DOI: [![DOI](https://zenodo.org/badge/1186360682.svg)](https://doi.org/10.5281/zenodo.20170792). Please cite the DOI when using or applying parts of this code.
+Forward-time population genetic simulations in [SLiM](https://messerlab.org/slim/) modeling the evolutionary fate of chromosomal inversions in *Drosophila melanogaster*, with explicit interchromosomal effects and a full-scale genome architecture. A static release of this repository has been archived at Zenodo under the following DOI: [![DOI](https://zenodo.org/badge/1186360682.svg)](https://doi.org/10.5281/zenodo.20170792). Please see below for how to cite this repository and funding sources for this work.
 
 ---
 
@@ -154,9 +154,9 @@ We found that modeling the inversion more realistically using ICE did NOT decrea
 
 ---
 
-## Citations
+## References
 
-If you use or adapt these scripts, please cite both the original Berdan et al. paper that inspired this framework and the relevant empirical parameter sources cited in the code comments:
+If you use or adapt these scripts, please also cite both the original Berdan et al. paper that inspired this framework and the relevant empirical parameter sources cited in the code comments:
 
 - Berdan EL, Blanckaert A, Butlin RK, Bank C (2021). Deleterious mutation accumulation and the long-term fate of chromosomal inversions. *PLoS Genetics* 17(3): e1009411. https://doi.org/10.1371/journal.pgen.1009411.
 
@@ -176,6 +176,11 @@ If you use or adapt these scripts, please cite both the original Berdan et al. p
 
 ---
 
-## License
+## How to Cite this Repository
 
-This project is released under the MIT License. See `LICENSE` for details.
+This project is released under the MIT License. See `LICENSE` for details. To cite this repository, Laurie Stevison and Spencer Koury. (2026). StevisonLab/Slim_ICE: Version 1.0 (v1.0). Zenodo. https://doi.org/10.5281/zenodo.20170793.
+
+## Funding 
+
+Research reported in this repository was supported by the National Institute Of General Medical Sciences of the National Institutes of Health under Award Number R35GM147501. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+
